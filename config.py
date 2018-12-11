@@ -2,6 +2,7 @@ class BaseConfig:
     LOGGING_DIR = './logs/'
     IMAGES_DIR = '/Users/sangnd/PycharmProjects/untitled/images/'
     OUTPUT = '/Users/sangnd/PycharmProjects/untitled/output/jump_send.xlsx'
+    OUTPUT2 = '/Users/sangnd/PycharmProjects/untitled/output/jump_send_cp.xlsx'
 
 
 class ApiConfig(BaseConfig):

@@ -10,53 +10,53 @@ from jump_send import login, get_requests, search
 logger = Logger()
 
 
-def load_out(deals):
-    try:
-        ids = []
-        for deal in deals:
-            ids.append(deal[0])
-        return ids
-    except Exception as e:
-        logger.write_log('debug', str(e))
+def get_deals_requested(token):
+    page = 1
+    result = []
+    while page is not None:
+        json = get_requests(token, page=page)
+        deal_requests = json['data']['deal_requests']
+        page = json['data']['next_page']
+        for deal in deal_requests:
+            promotion_id = deal['promotion_id']
+            coupon_code = deal['coupon_code']
+            if coupon_code is not None:
+                result.append((promotion_id, coupon_code))
+        time.sleep(2)
+    return result
 
 
-def get_id_saved():
-    try:
-        wb = load_workbook(ApiConfig.OUTPUT)
-        ws = wb.active
-        return ws.iter_rows()
-    except Exception as e:
-        logger.write_log('debug', str(e))
+def request_deal(max_page, token):
+    for i in range(1, max_page):
+        ids = search(i)
+        for _id in ids:
+            deal = Deal(id=_id)
+            deal.request(token)
+            time.sleep(1)
+            print("Done {0}".format(_id))
+
+
+def save_deal(deals):
+    for d in deals:
+        print("Start for id {0}".format(d[0]))
+        id = d[0]
+        coupon = d[1]
+        deal = Deal(id=id, coupon_code=coupon)
+        deal.get_details()
+        deal.request(token)
+        deal.save(ApiConfig.OUTPUT2)
 
 
 if __name__ == '__main__':
+    # Step1: Login to get token
+    # Step2: Send request to approve and get code
+    # Step3: Send request to get deals were approved
+    # Step4: From deals approved send request to get details
+    # """Step-1"""
     token = login()
-    deals = []
-    for i in range(1, 6):
-        ids = search(i)
-        for _id in ids:
-            if _id in deals:
-                continue
-            deals.append(_id)
-            deal = Deal(id=_id)
-            deal.get_details()
-            deal.request(token)
-            deal.save()
-            print("Done {0}".format(_id))
-    # # page = 1
-    # # while True:
-    # #     print(page)
-    # #     out = False
-    # #     json = get_requests(token, page=page)
-    # #     deal_requests = json['data']['deal_requests']
-    # #     page = json['data']['next_page']
-    # #     for deal in deal_requests:
-    # #         promotion_id = deal['promotion_id']
-    # #         if promotion_id in a:
-    # #             out = True
-    # #             print(deal['coupon_code'])
-    # #             print(promotion_id)
-    # #     if out:
-    # #         break
-    # deals = list(get_id_saved())
-    # print(deals)
+    # """Step-2"""
+    request_deal(10, token)
+    # """Step-3"""
+    deals = get_deals_requested(token)
+    # """Step-4"""
+    save_deal(deals)

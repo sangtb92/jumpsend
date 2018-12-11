@@ -76,7 +76,6 @@ class Deal:
         minutes = int(time_remaining[4])
         time_remaining_epoch = (int(day) * 24 * 60 * 60 + int(hours) * 60 * 60 + int(minutes) * 60)
         now = time.time()
-        print(now)
         expire_epoch = now + time_remaining_epoch
         expire_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(expire_epoch))
         return expire_time
@@ -135,11 +134,11 @@ class Deal:
             logger.write_log("DEBUG", str(e))
             return -1
 
-    def save(self):
+    def save(self, file=ApiConfig.OUTPUT):
         try:
-            wb = load_workbook(ApiConfig.OUTPUT)
+            wb = load_workbook(file)
             ws = wb.active
             ws.append(self.__to_array_())
-            wb.save(filename=ApiConfig.OUTPUT)
+            wb.save(filename=file)
         except Exception as e:
             logger.write_log('debug', str(e))
